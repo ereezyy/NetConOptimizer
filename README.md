@@ -6,3 +6,11 @@ Reset Winsock: Addresses socket-related problems affecting network speed.
 Disable Wi-Fi Power-Saving Mode: Ensures maximum performance by keeping the adapter always active.
 Prioritize Active Wi-Fi Connection: Ensures the most reliable connection is prioritized.
 Restart Networking Services: Refreshes key services for better performance.
+
+
+How to Use:
+Open a text editor like Notepad.
+Paste the script above.
+Save the file as OptimizeWiFi.ps1.
+Open PowerShell as Administrator.
+Navigate to the script's directory and run:
