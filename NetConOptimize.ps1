@@ -14,8 +14,12 @@ try {
 # Release and Renew IP Configuration
 Write-Host "Releasing and renewing IP configuration..."
 try {
-    ipconfig /release | Out-Null
-    ipconfig /renew | Out-Null
+    $wifiAdapters = Get-NetAdapter | Where-Object { $_.Name -like "*Wi-Fi*" -and $_.Status -eq "Up" }
+    foreach ($adapter in $wifiAdapters) {
+        Write-Host "Renewing IP for '$($adapter.Name)'..."
+        ipconfig /release "*$($adapter.Name)*" | Out-Null
+        ipconfig /renew "*$($adapter.Name)*" | Out-Null
+    }
 } catch {
     Write-Error "Failed to release/renew IP configuration: $_"
 }
@@ -24,6 +28,7 @@ try {
 Write-Host "Resetting TCP/IP stack..."
 try {
     netsh int ip reset | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "netsh returned exit code $LASTEXITCODE" }
 } catch {
     Write-Error "Failed to reset TCP/IP stack: $_"
 }
@@ -32,6 +37,7 @@ try {
 Write-Host "Resetting Winsock..."
 try {
     netsh winsock reset | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "netsh returned exit code $LASTEXITCODE" }
 } catch {
     Write-Error "Failed to reset Winsock: $_"
 }
@@ -77,14 +83,15 @@ try {
 # Prioritize Active Connection
 Write-Host "Prioritizing active Wi-Fi connection..."
 try {
-    $activeConnections = @(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null })
+    $activeConnections = @(Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -ne $null -and $_.InterfaceAlias -like "*Wi-Fi*" })
     if ($activeConnections.Count -gt 0) {
         foreach ($conn in $activeConnections) {
+            Write-Host "Prioritizing connection for '$($conn.InterfaceAlias)'..."
             Set-NetIPInterface -InterfaceIndex $conn.InterfaceIndex -Dhcp Enabled -AutomaticMetric $true -ErrorAction Stop
         }
         Write-Host "Connection prioritized successfully."
     } else {
-        Write-Warning "No active internet connection found. Skipping prioritization."
+        Write-Warning "No active Wi-Fi internet connection found. Skipping prioritization."
     }
 } catch {
     Write-Error "Failed to prioritize active connection: $_"
