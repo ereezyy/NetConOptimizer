@@ -10,7 +10,10 @@ Restart Networking Services: Refreshes key services for better performance.
 
 How to Use:
 Open a text editor like Notepad.
-Paste the script above.
-Save the file as OptimizeWiFi.ps1.
+Copy the script.
+Save the file as NetConOptimize.ps1.
 Open PowerShell as Administrator.
 Navigate to the script's directory and run:
+```powershell
+.\NetConOptimize.ps1
+```
