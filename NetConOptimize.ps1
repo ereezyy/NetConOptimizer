@@ -36,10 +36,17 @@ try {
     Write-Error "Failed to reset Winsock: $_"
 }
 
+# Initialize Wi-Fi Adapters list safely outside of try/catch blocks
+try {
+    $adapters = @(Get-NetAdapter | Where-Object {$_.Status -eq "Up" -and $_.Name -like "*Wi-Fi*"})
+} catch {
+    $adapters = @()
+    Write-Error "Failed to enumerate Wi-Fi adapters: $_"
+}
+
 # Optimize Wi-Fi Adapter Settings
 Write-Host "Optimizing Wi-Fi adapter settings..."
 try {
-    $adapters = @(Get-NetAdapter | Where-Object {$_.Status -eq "Up" -and $_.Name -like "*Wi-Fi*"})
     if ($adapters.Count -gt 0) {
         foreach ($adapter in $adapters) {
             Write-Host "Disabling power-saving mode for Wi-Fi adapter '$($adapter.Name)'..."
@@ -58,7 +65,7 @@ try {
     if ($adapters.Count -gt 0) {
         foreach ($adapter in $adapters) {
             Write-Host "Configuring autoconfig for '$($adapter.Name)'..."
-            netsh wlan set autoconfig enabled=yes interface=$adapter.Name | Out-Null
+            netsh wlan set autoconfig enabled=yes interface="$($adapter.Name)" | Out-Null
         }
     } else {
         Write-Warning "No active Wi-Fi adapter found. Skipping high throughput configuration."
